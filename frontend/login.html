@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Iniciar Sesión</h2>
+
+    <input type="email" id="correo" placeholder="Correo">
+    <input type="password" id="password" placeholder="Contraseña">
+
+    <button onclick="login()">Ingresar</button>
+
+    <p id="mensaje" style="text-align:center;"></p>
+
+    <p>¿No tienes cuenta? <a href="registro.html">Regístrate</a></p>
+</div>
+
+<script>
+function login() {
+    const correo = document.getElementById("correo").value;
+    const password = document.getElementById("password").value;
+    const mensaje = document.getElementById("mensaje");
+
+    if (!correo || !password) {
+        mensaje.style.color = "red";
+        mensaje.innerText = "⚠️ Todos los campos son obligatorios";
+        return;
+    }
+
+    fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ correo, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+    if (data.error) {
+        mensaje.style.color = "red";
+        mensaje.innerText = data.error;
+        } else {    
+        mensaje.style.color = "green";
+        mensaje.innerText = "✅ Login exitoso";
+
+        // Guarda token
+        localStorage.setItem("token", data.token);
+        }
+
+    })
+    .catch(error => {
+        mensaje.style.color = "red";
+        mensaje.innerText = "❌ Error al conectar con el servidor";
+    });
+}
+</script>
+
+</body>
+</html>
