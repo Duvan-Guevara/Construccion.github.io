@@ -2,94 +2,82 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const userModel = require("../models/user.model");
 
-
-// ========================
-// 🔑 LOGIN REAL
-// ========================
-exports.login = async (correo, password) => {
+// Registar
+exports.register = async (nombre, email, password) => {
   try {
-    // 1. buscar usuario en la BD
-    const user = await userModel.findByEmail(correo);
+    // verificar si existe
+    const userExists = await userModel.findByEmail(email);
+
+    if (userExists) {
+      return { error: "El usuario ya existe" };
+    }
+
+    // encriptar contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // guardar en BD
+    const newUser = await userModel.createUser(
+      nombre,
+      email,
+      hashedPassword
+    );
+
+    return {
+      message: "Usuario creado correctamente",
+      user: {
+        id: newUser.id,
+        nombre: newUser.nombre,
+        email: newUser.email
+      }
+    };
+
+  } catch (error) {
+    console.error("SERVICE REGISTER ERROR:", error.message);
+    return { error: "Error en registro" };
+  }
+};
+
+
+// Login
+exports.login = async (email, password) => {
+  try {
+    // buscar usuario
+    const user = await userModel.findByEmail(email);
 
     if (!user) {
       return { error: "Usuario no existe" };
     }
 
-    // 2. comparar contraseña
+    // comparar contraseña
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return { error: "Credenciales incorrectas" };
+      return { error: "Contraseña incorrecta" };
     }
 
-    // 3. generar token
+    // generar token
     const token = jwt.sign(
       {
         id: user.id,
-        correo: user.email,
-        nombre: user.nombre,
-        rol: user.rol || "user"
+        email: user.email,
+        nombre: user.nombre
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
     return {
-      mensaje: "Login exitoso",
+      message: "Login exitoso",
       token,
-      usuario: {
+      user: {
         id: user.id,
         nombre: user.nombre,
-        correo: user.email,
-        rol: user.rol || "user"
+        email: user.email
       }
     };
 
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
+    console.error("SERVICE LOGIN ERROR:", error.message);
     return { error: "Error en login" };
-  }
-};
-
-
-
-// ========================
-// 🔐 REGISTRO REAL
-// ========================
-exports.registro = async (nombre, correo, password, rol = "user") => {
-  try {
-    console.log("🟢 Service registro");
-
-    // 1. verificar si ya existe
-    const userExists = await userModel.findByEmail(correo);
-
-    if (userExists) {
-      return { error: "El usuario ya existe" };
-    }
-
-    // 2. encriptar contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 3. guardar en la BD
-    const newUser = await userModel.createUser(
-      nombre,
-      correo,
-      hashedPassword,
-      rol
-    );
-
-    return {
-      mensaje: "Usuario registrado correctamente",
-      usuario: {
-        id: newUser.id,
-        nombre: newUser.nombre,
-        correo: newUser.email,
-        rol: newUser.rol
-      }
-    };
-
-  } catch (error) {
-    console.error("REGISTER ERROR:", error);
-    return { error: "Error en registro" };
   }
 };
