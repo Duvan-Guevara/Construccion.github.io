@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div>🛒 Mi Ecommerce</div>
+
+    <div>
+        👤 <span id="nombreUsuario"></span>
+        <button onclick="logout()">Salir</button>
+    </div>
+</div>
+
+<div class="main">
+
+    <h2>Catálogo</h2>
+
+    <div class="catalogo">
+
+        <div class="producto">
+            <img src="https://via.placeholder.com/150">
+            <h3>Producto 1</h3>
+            <p>$100</p>
+            <button>Agregar</button>
+        </div>
+
+        <div class="producto">
+            <img src="https://via.placeholder.com/150">
+            <h3>Producto 2</h3>
+            <p>$200</p>
+            <button>Agregar</button>
+        </div>
+
+        <div class="producto">
+            <img src="https://via.placeholder.com/150">
+            <h3>Producto 3</h3>
+            <p>$300</p>
+            <button>Agregar</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user) {
+    window.location.href = "login.html";
+} else {
+    document.getElementById("nombreUsuario").innerText = user.nombre;
+}
+
+function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+}
+</script>
+
+</body>

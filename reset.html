@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva contraseña</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Nueva contraseña</h2>
+
+    <input type="password" id="password" placeholder="Nueva contraseña">
+    <button onclick="cambiar()">Cambiar</button>
+</div>
+
+<script>
+const token = params.token;
+
+const resetPassword = async () => {
+  await fetch(`http://localhost:5000/auth/reset-password/${token}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ password })
+  });
+};
+</script>
+
+</body>
+</html>
