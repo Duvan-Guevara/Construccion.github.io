@@ -47,6 +47,8 @@ function login() {
     .then(res => res.json())
     .then(data => {
 
+        console.log("DATA:", data);
+
         if (data.message === "Usuario no existe" || data.message === "Contraseña incorrecta") {
             mensaje.style.color = "red";
             mensaje.innerText = data.message;

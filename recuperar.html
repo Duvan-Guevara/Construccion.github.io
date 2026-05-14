@@ -15,22 +15,39 @@
 
     <p id="mensaje"></p>
 
-    <!-- 🔥 BOTÓN REGRESAR -->
     <p style="text-align:center; margin-top:10px;">
         <a href="login.html">← Volver al login</a>
     </p>
 </div>
 
 <script>
-const sendEmail = async () => {
-  await fetch('http://localhost:5000/auth/forgot-password', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ email })
-  });
-};
+
+function recuperar() {
+    const email = document.getElementById("correo").value;
+    const mensaje = document.getElementById("mensaje");
+
+    if (!email) {
+        mensaje.innerText = "⚠️ Ingresa tu correo";
+        return;
+    }
+
+    fetch("http://localhost:3000/auth/forgot-password", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+    })
+    .then(res => res.json())
+    .then(data => {
+        mensaje.innerText = data.message;
+    })
+    .catch((error) => {
+    console.log("ERROR:", error);
+    mensaje.innerText = "❌ Error al enviar correo";
+    });
+}
+
 </script>
 
 </body>

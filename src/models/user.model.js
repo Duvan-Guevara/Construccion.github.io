@@ -1,20 +1,16 @@
 const pool = require("../config/db");
 
-// ========================
-// 👤 CREAR USUARIO
-// ========================
+// Crear un Usuario
 exports.createUser = async (nombre, email, hashedPassword) => {
   const result = await pool.query(
-    "INSERT INTO users (nombre, email, password) VALUES ($1, $2, $3) RETURNING *",
-    [nombre, email, hashedPassword]
+    "INSERT INTO users (nombre, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
+    [nombre, email, hashedPassword, "user"]
   );
 
   return result.rows[0];
 };
 
-// ========================
-// 🔍 BUSCAR POR EMAIL
-// ========================
+// Buscar por Email
 exports.findByEmail = async (email) => {
   const result = await pool.query(
     "SELECT * FROM users WHERE email = $1",
@@ -24,12 +20,74 @@ exports.findByEmail = async (email) => {
   return result.rows[0];
 };
 
-// ========================
-// 🔄 ACTUALIZAR PASSWORD
-// ========================
-exports.updatePassword = async (id, password) => {
-  await pool.query(
-    "UPDATE users SET password = $1 WHERE id = $2",
-    [password, id]
-  );
+// Buscar token del Usuario
+exports.findByToken = async (token) => {
+  const query = `
+    SELECT * FROM users 
+    WHERE reset_token = $1 
+    AND reset_expires > NOW()
+  `;
+
+  const result = await pool.query(query, [token]);
+  return result.rows[0];
+};
+
+// Actualizar Password
+exports.actualizarPassword = async (email, password) => {
+  const query = `
+    UPDATE users 
+    SET password = $1, reset_token = NULL, reset_expires = NULL
+    WHERE email = $2
+  `;
+  await pool.query(query, [password, email]);
+};
+
+exports.saveResetToken = async (email, token, expires) => {
+  const query = `
+    UPDATE users
+    SET reset_token = $1, reset_expires = $2
+    WHERE email = $3
+  `;
+
+  await pool.query(query, [token, expires, email]);
+};
+
+exports.obtenerUsuarios = async () => {
+
+  const query = `
+    SELECT id, nombre, email, role
+    FROM users
+    ORDER BY id ASC
+  `;
+
+  const result = await pool.query(query);
+
+  return result.rows;
+};
+
+// Cambiar rol
+exports.cambiarRol = async (id, role) => {
+
+  const query = `
+    UPDATE users
+    SET role = $1
+    WHERE id = $2
+    RETURNING *
+  `;
+
+  const result =
+    await pool.query(query, [role, id]);
+
+  return result.rows[0];
+};
+
+// Eliminar usuario
+exports.eliminarUsuario = async (id) => {
+
+  const query = `
+    DELETE FROM users
+    WHERE id = $1
+  `;
+
+  await pool.query(query, [id]);
 };

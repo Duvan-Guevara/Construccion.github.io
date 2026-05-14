@@ -17,9 +17,16 @@ app.use(logger.logger);
 const authRoutes = require("./src/routes/auth.routes");
 app.use("/auth", authRoutes);
 
-// Error handler (SIEMPRE AL FINAL)
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
+
+// Error handler (Captura Errores del sistema)
 const errorMiddleware = require("./src/middlewares/error.middleware");
 app.use(errorMiddleware.manejarErrores);
+
+//Gestion de productos del panel
+const productRoutes =require("./src/routes/product.routes");
+app.use("/products", productRoutes);
 
 // Server
 app.listen(process.env.PORT, () => {
