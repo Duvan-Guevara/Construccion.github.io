@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Principal</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="principal">
+
+<!-- NAVBAR -->
+<div class="navbar">
+
+  <span>🛒 MiTienda</span>
+
+  <div class="perfil-box">
+
+    <!-- BOTÓN ADMIN -->
+    <button
+      id="btnAdmin"
+      class="btn-admin"
+      style="display:none;"
+      onclick="toggleAdmin()"
+    >
+      ⚙️ Admin
+    </button>
+
+    <!-- BOTÓN PERFIL -->
+    <button
+      class="btn-perfil"
+      onclick="togglePerfil()"
+    >
+      👤 Perfil
+    </button>
+
+    <!-- PERFIL -->
+    <div id="perfilSection" class="perfil-dropdown">
+
+      <h3 id="nombreUsuario"></h3>
+
+      <div class="perfil-dato">
+        <label>Teléfono</label>
+        <input type="text" id="telefono">
+      </div>
+
+      <div class="perfil-dato">
+        <label>Dirección</label>
+        <input type="text" id="direccion">
+      </div>
+
+      <div class="perfil-dato">
+        <label>Ciudad</label>
+        <input type="text" id="ciudad">
+      </div>
+
+      <div class="perfil-botones">
+
+        <button
+          id="btnPerfil"
+          onclick="guardarPerfil()"
+        >
+          Guardar
+        </button>
+
+        <button
+          class="btn-cerrar"
+          onclick="cerrarSesion()"
+        >
+          Cerrar sesión
+        </button>
+
+      </div>
+
+      <p id="mensajePerfil"></p>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- PANEL ADMIN -->
+<div id="adminPanel" class="admin-overlay">
+
+  <div class="admin-modal">
+
+    <div class="admin-header">
+
+      <h2>⚙️ Panel Administrador</h2>
+
+      <button
+        class="cerrar-admin"
+        onclick="toggleAdmin()"
+      >
+        X
+      </button>
+
+    </div>
+
+    <div class="admin-grid">
+
+      <div class="admin-card" id="cardUsuarios">
+        <h3>👥 Usuarios</h3>
+        <p>Gestionar usuarios registrados</p>
+
+        <button onclick="cargarUsuarios()">
+            Entrar
+        </button>
+      </div>
+
+      <div class="admin-card" id="cardProductos">
+
+        <h3>📦 Productos</h3>
+
+        <p>
+          Acceso al módulo catálogo e inventario
+        </p>
+
+        <button onclick="mostrarModuloProductos()">
+          Entrar
+        </button>
+
+      </div>
+
+      <div class="admin-card" id="cardVentas">
+
+          <h3>🛒 Ventas</h3>
+
+          <p>
+            Acceso al módulo de ventas
+          </p>
+
+          <button onclick="mostrarModuloVentas()">
+            Entrar
+          </button>
+
+      </div>
+
+    </div>
+
+    <div id="contenidoAdmin"></div>
+    
+  </div>
+
+</div>
+
+<!-- CATÁLOGO -->
+<div class="main">
+
+  <h2>Catálogo</h2>
+
+  <div class="catalogo">
+
+    <div class="producto">
+      <img src="https://via.placeholder.com/150">
+      <h3>Producto 1</h3>
+      <p>$100</p>
+      <button>Agregar</button>
+    </div>
+
+    <div class="producto">
+      <img src="https://via.placeholder.com/150">
+      <h3>Producto 2</h3>
+      <p>$200</p>
+      <button>Agregar</button>
+    </div>
+
+    <div class="producto">
+      <img src="https://via.placeholder.com/150">
+      <h3>Producto 3</h3>
+      <p>$300</p>
+      <button>Agregar</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+let perfilExiste = false;
+
+window.onload = function () {
+
+  const token =
+    localStorage.getItem("token");
+
+  const user =
+    JSON.parse(localStorage.getItem("user"));
+
+  // SI NO HAY TOKEN
+  if (!token) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  // MOSTRAR NOMBRE
+  if (user) {
+    document.getElementById(
+      "nombreUsuario"
+    ).innerText = user.nombre;
+  }
+
+  // MOSTRAR PANEL SEGÚN ROL
+if (
+  user &&
+  (
+    user.role === "admin" ||
+    user.role === "operador" ||
+    user.role === "user"
+  )
+) {
+
+  document.getElementById(
+    "btnAdmin"
+  ).style.display = "block";
+}
+
+// ADMIN
+if (user.role === "admin") {
+
+  // ve todo
+}
+
+// OPERADOR
+if (user.role === "operador") {
+
+  // ocultar usuarios
+  document.getElementById(
+    "cardUsuarios"
+  ).style.display = "none";
+}
+
+// USER / CLIENTE
+if (user.role === "user") {
+
+  // ocultar usuarios
+  document.getElementById(
+    "cardUsuarios"
+  ).style.display = "none";
+
+  // ocultar productos
+  document.getElementById(
+    "cardProductos"
+  ).style.display = "none";
+
+  // mostrar solo ventas
+  document.getElementById(
+    "cardVentas"
+  ).style.display = "block";
+}
+
+  // CARGAR PERFIL
+  fetch(
+    "http://localhost:3000/auth/perfil/datos",
+    {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    }
+  )
+  .then(res => res.json())
+  .then(data => {
+
+    console.log("PERFIL:", data);
+
+    if (data && data.telefono) {
+
+      perfilExiste = true;
+
+      document.getElementById(
+        "telefono"
+      ).value = data.telefono;
+
+      document.getElementById(
+        "direccion"
+      ).value = data.direccion;
+
+      document.getElementById(
+        "ciudad"
+      ).value = data.ciudad;
+
+      document.getElementById(
+        "btnPerfil"
+      ).innerText = "Editar";
+    }
+  });
+};
+
+// GUARDAR PERFIL
+function guardarPerfil() {
+
+  const telefono =
+    document.getElementById("telefono").value;
+
+  const direccion =
+    document.getElementById("direccion").value;
+
+  const ciudad =
+    document.getElementById("ciudad").value;
+
+  const token =
+    localStorage.getItem("token");
+
+  const url = perfilExiste
+    ? "http://localhost:3000/auth/perfil/actualizar"
+    : "http://localhost:3000/auth/perfil";
+
+  const method = perfilExiste
+    ? "PUT"
+    : "POST";
+
+  fetch(url, {
+
+    method: method,
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+
+    body: JSON.stringify({
+      telefono,
+      direccion,
+      ciudad
+    })
+
+  })
+  .then(res => res.json())
+  .then(data => {
+
+    document.getElementById(
+      "mensajePerfil"
+    ).innerText = data.message;
+
+    perfilExiste = true;
+
+    document.getElementById(
+      "btnPerfil"
+    ).innerText = "Editar";
+  });
+}
+
+// PERFIL
+function togglePerfil() {
+
+  const perfil =
+    document.getElementById(
+      "perfilSection"
+    );
+
+  perfil.style.display =
+    perfil.style.display === "block"
+      ? "none"
+      : "block";
+}
+
+// PANEL ADMIN
+function toggleAdmin() {
+
+  const panel =
+    document.getElementById(
+      "adminPanel"
+    );
+
+  panel.style.display =
+    panel.style.display === "flex"
+      ? "none"
+      : "flex";
+}
+
+async function cargarUsuarios() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    "http://localhost:3000/auth/usuarios",
+    {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    }
+  );
+
+  const usuarios = await res.json();
+  console.log(usuarios);
+
+  if (!Array.isArray(usuarios)) {
+
+  document.getElementById(
+    "contenidoAdmin"
+  ).innerHTML = `
+    <p style="color:red;">
+      Error cargando usuarios
+    </p>
+  `;
+
+  return;
+  }
+
+  let html = `
+    <h2>Usuarios Registrados</h2>
+
+    <table border="1" width="100%">
+      <tr>
+      <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr> 
+  `;
+
+  usuarios.forEach(user => {
+
+  html += `
+    <tr>
+      <td>${user.id}</td>
+      <td>${user.nombre}</td>
+      <td>${user.email}</td>
+
+      <td>
+
+        <select onchange="cambiarRol(${user.id}, this.value)">
+
+          <option value="user"
+            ${user.role === "user" ? "selected" : ""}
+          >
+            user
+          </option>
+
+          <option value="operador"
+            ${user.role === "operador" ? "selected" : ""}
+          >
+            operador
+          </option>
+
+          <option value="admin"
+            ${user.role === "admin" ? "selected" : ""}
+          >
+            admin
+          </option>
+
+        </select>
+
+      </td>
+
+      <td>
+
+        <button onclick="eliminarUsuario(${user.id})">
+          Eliminar
+        </button>
+
+      </td>
+    </tr>
+  `;
+  });
+
+  html += `</table>`;
+
+  document.getElementById(
+    "contenidoAdmin"
+  ).innerHTML = html;
+}
+
+// CAMBIAR ROL
+async function cambiarRol(id, role) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `http://localhost:3000/auth/usuarios/${id}/role`,
+    {
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token
+      },
+
+      body: JSON.stringify({ role })
+    }
+  );
+
+  const data = await res.json();
+
+  alert(data.message);
+}
+
+// ELIMINAR USUARIO
+async function eliminarUsuario(id) {
+
+  const confirmar =
+    confirm("¿Eliminar usuario?");
+
+  if (!confirmar) return;
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `http://localhost:3000/auth/usuarios/${id}`,
+    {
+      method: "DELETE",
+
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  alert(data.message);
+
+  cargarUsuarios();
+}
+
+// MÓDULO PRODUCTOS
+function mostrarModuloProductos() {
+
+  const user =
+    JSON.parse(localStorage.getItem("user"));
+
+  let permisos = "";
+
+  // ADMIN
+  if (user.role === "admin") {
+
+    permisos = `
+      <li>✔ Crear productos</li>
+      <li>✔ Editar productos</li>
+      <li>✔ Eliminar productos</li>
+      <li>✔ Gestionar inventario</li>
+    `;
+  }
+
+  // OPERADOR
+  if (user.role === "operador") {
+
+    permisos = `
+      <li>✔ Registrar productos</li>
+      <li>✔ Actualizar stock</li>
+      <li>✔ Ver inventario</li>
+    `;
+  }
+
+  // CLIENTE
+  if (user.role === "user") {
+
+    permisos = `
+      <li>✔ Ver catálogo</li>
+      <li>✔ Comprar productos</li>
+    `;
+  }
+
+  document.getElementById(
+    "contenidoAdmin"
+  ).innerHTML = `
+
+    <div class="modulo-info">
+
+      <h2>
+        📦 Módulo Catálogo e Inventario
+      </h2>
+
+      <p>
+        Este módulo pertenece al
+        microservicio de catálogo
+        e inventario.
+      </p>
+
+      <h3>
+        Permisos del rol:
+        ${user.role}
+      </h3>
+
+      <ul class="lista-permisos">
+        ${permisos}
+      </ul>
+
+      <div class="estado-modulo">
+
+        🔗 Listo para conectarse con
+        el microservicio de catálogo.
+
+      </div>
+
+    </div>
+  `;
+}
+
+// MÓDULO VENTAS
+function mostrarModuloVentas() {
+
+  const user =
+    JSON.parse(localStorage.getItem("user"));
+
+  let permisos = "";
+
+  // ADMIN
+  if (user.role === "admin") {
+
+    permisos = `
+      <li>✔ Ver todas las ventas</li>
+      <li>✔ Ver estadísticas</li>
+      <li>✔ Ver compras de clientes</li>
+      <li>✔ Supervisar operadores</li>
+    `;
+  }
+
+  // OPERADOR
+  if (user.role === "operador") {
+
+    permisos = `
+      <li>✔ Ver ventas realizadas</li>
+      <li>✔ Ver pedidos gestionados</li>
+      <li>✔ Consultar estado de ventas</li>
+    `;
+  }
+
+  // CLIENTE
+  if (user.role === "user") {
+
+    permisos = `
+      <li>✔ Ver historial de compras</li>
+      <li>✔ Ver estado de pedidos</li>
+      <li>✔ Consultar facturas</li>
+    `;
+  }
+
+  document.getElementById(
+    "contenidoAdmin"
+  ).innerHTML = `
+
+    <div class="modulo-info">
+
+      <h2>
+        🛒 Módulo de Ventas
+      </h2>
+
+      <p>
+        Este módulo pertenece al
+        microservicio de ventas.
+      </p>
+
+      <h3>
+        Permisos del rol:
+        ${user.role}
+      </h3>
+
+      <ul class="lista-permisos">
+        ${permisos}
+      </ul>
+
+      <div class="estado-modulo">
+
+        🔗 Listo para conectarse con
+        el microservicio de ventas.
+
+      </div>
+
+    </div>
+  `;
+}
+
+// CERRAR SESIÓN
+function cerrarSesion() {
+
+  localStorage.removeItem("token");
+
+  localStorage.removeItem("user");
+
+  window.location.href = "login.html";
+}
+
+</script>
+
+</body>
+</html>

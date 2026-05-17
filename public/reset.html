@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva contraseña</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Nueva contraseña</h2>
+
+    <input type="password" id="password" placeholder="Nueva contraseña">
+    <button onclick="cambiar()">Cambiar</button>
+
+    <p id="mensaje"></p>
+</div>
+
+<script>
+
+// Obtener token desde la URL
+function getToken() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("token");
+}
+
+// Función principal
+function cambiar() {
+    const password = document.getElementById("password").value;
+    const mensaje = document.getElementById("mensaje");
+    const token = getToken();
+
+    if (!password) {
+        mensaje.innerText = "⚠️ Ingresa una contraseña";
+        return;
+    }
+
+    fetch("http://localhost:3000/auth/reset", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ token, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+        mensaje.innerText = data.message;
+
+        // opcional: redirigir a login
+        if (data.message === "Contraseña actualizada") {
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 2000);
+        }
+    })
+    .catch(() => {
+        mensaje.innerText = "❌ Error al cambiar contraseña";
+    });
+}
+
+</script>
+
+</body>
+</html>
