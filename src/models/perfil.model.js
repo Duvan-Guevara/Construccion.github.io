@@ -3,7 +3,7 @@ const pool = require("../config/db");
 // Crear Pefil
 exports.crearPerfil = async (user_id, telefono, direccion, ciudad, foto) => {
   const query = `
-    INSERT INTO perfil (user_id, telefono, direccion, ciudad, foto)
+    INSERT INTO auth.perfil (user_id, telefono, direccion, ciudad, foto)
     VALUES ($1, $2, $3, $4, $5)
     RETURNING *
   `;
@@ -14,7 +14,7 @@ exports.crearPerfil = async (user_id, telefono, direccion, ciudad, foto) => {
 
 // Obtener Perfil
 exports.obtenerPerfil = async (user_id) => {
-  const query = `SELECT * FROM perfil WHERE user_id = $1`;
+  const query = `SELECT * FROM auth.perfil WHERE user_id = $1`;
   const result = await pool.query(query, [user_id]);
   return result.rows[0];
 };
@@ -22,7 +22,7 @@ exports.obtenerPerfil = async (user_id) => {
 // Actualizar Perfil
 exports.actualizarPerfil = async (user_id, telefono, direccion, ciudad,foto) => {
   const query = `
-    UPDATE perfil
+    UPDATE auth.perfil
     SET telefono = $1, direccion = $2, ciudad = $3, foto = $4
     WHERE user_id = $5
     RETURNING *

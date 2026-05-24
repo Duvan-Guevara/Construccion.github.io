@@ -3,7 +3,7 @@ const pool = require("../config/db");
 // Crear un Usuario
 exports.createUser = async (nombre, email, hashedPassword) => {
   const result = await pool.query(
-    "INSERT INTO users (nombre, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
+    "INSERT INTO auth.users (nombre, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
     [nombre, email, hashedPassword, "user"]
   );
 
@@ -13,7 +13,7 @@ exports.createUser = async (nombre, email, hashedPassword) => {
 // Buscar por Email
 exports.findByEmail = async (email) => {
   const result = await pool.query(
-    "SELECT * FROM users WHERE email = $1",
+    "SELECT * FROM auth.users WHERE email = $1",
     [email]
   );
 
@@ -23,7 +23,7 @@ exports.findByEmail = async (email) => {
 // Buscar token del Usuario
 exports.findByToken = async (token) => {
   const query = `
-    SELECT * FROM users 
+    SELECT * FROM auth.users 
     WHERE reset_token = $1 
     AND reset_expires > NOW()
   `;
@@ -35,7 +35,7 @@ exports.findByToken = async (token) => {
 // Actualizar Password
 exports.actualizarPassword = async (email, password) => {
   const query = `
-    UPDATE users 
+    UPDATE auth.users 
     SET password = $1, reset_token = NULL, reset_expires = NULL
     WHERE email = $2
   `;
@@ -44,7 +44,7 @@ exports.actualizarPassword = async (email, password) => {
 
 exports.saveResetToken = async (email, token, expires) => {
   const query = `
-    UPDATE users
+    UPDATE auth.users
     SET reset_token = $1, reset_expires = $2
     WHERE email = $3
   `;
@@ -56,7 +56,7 @@ exports.obtenerUsuarios = async () => {
 
   const query = `
     SELECT id, nombre, email, role
-    FROM users
+    FROM auth.users
     ORDER BY id ASC
   `;
 
@@ -69,7 +69,7 @@ exports.obtenerUsuarios = async () => {
 exports.cambiarRol = async (id, role) => {
 
   const query = `
-    UPDATE users
+    UPDATE auth.users
     SET role = $1
     WHERE id = $2
     RETURNING *
@@ -85,7 +85,7 @@ exports.cambiarRol = async (id, role) => {
 exports.eliminarUsuario = async (id) => {
 
   const query = `
-    DELETE FROM users
+    DELETE FROM auth.users
     WHERE id = $1
   `;
 

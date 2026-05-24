@@ -13,6 +13,12 @@ router.post("/registro", authController.register);
 // Login
 router.post("/login", authController.login);
 
+// Validar token para otros microservicios
+router.get("/validate", verificarToken, authController.validateToken);
+
+// Obtener usuario autenticado con perfil
+router.get("/me", verificarToken, authController.me);
+
 // Nueva Contraseña 
 router.post("/reset", authController.resetPassword);
 

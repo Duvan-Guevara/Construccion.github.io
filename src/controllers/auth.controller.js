@@ -1,4 +1,5 @@
 const authService = require("../services/auth.service");
+const perfilService = require("../services/perfil.service");
 
 // Registrar
 exports.register = async (req, res) => {
@@ -124,6 +125,12 @@ exports.cambiarRol = async (req, res) => {
     const usuario =
       await authService.cambiarRol(id, role);
 
+    if (usuario.error) {
+      return res.status(400).json({
+        message: usuario.error
+      });
+    }
+
     res.json({
       message: "Rol actualizado",
       usuario
@@ -155,6 +162,37 @@ exports.eliminarUsuario = async (req, res) => {
     res.status(500).json({
       message: "Error eliminando usuario"
     });
+  }
+};
+
+// Validar token para otros microservicios
+exports.validateToken = async (req, res) => {
+  return res.json({
+    valid: true,
+    user: {
+      id: req.usuario.id,
+      nombre: req.usuario.nombre,
+      email: req.usuario.email,
+      role: req.usuario.role
+    }
+  });
+};
+
+// Obtener usuario autenticado con perfil
+exports.me = async (req, res) => {
+  try {
+    const perfil = await perfilService.obtenerPerfil(req.usuario.id);
+
+    return res.json({
+      id: req.usuario.id,
+      nombre: req.usuario.nombre,
+      email: req.usuario.email,
+      role: req.usuario.role,
+      perfil: perfil || null
+    });
+  } catch (error) {
+    console.error("ME ERROR:", error.message);
+    return res.status(500).json({ message: "Error obteniendo usuario" });
   }
 };
 

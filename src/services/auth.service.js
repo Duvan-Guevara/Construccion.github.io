@@ -100,7 +100,8 @@ exports.forgotPassword = async (email) => {
 
     await userModel.saveResetToken(email, token, expires);
 
-    const link = `http://localhost:3000/reset.html?token=${token}`;
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const link = `${frontendUrl}/reset.html?token=${token}`;
 
     // 📩 enviar correo
     await sendRecoveryEmail(email, link);
@@ -148,6 +149,11 @@ exports.obtenerUsuarios = async () => {
 
 // Cambiar rol
 exports.cambiarRol = async (id, role) => {
+  const rolesPermitidos = ["admin", "operador", "user"];
+
+  if (!rolesPermitidos.includes(role)) {
+    return { error: "Rol no permitido" };
+  }
 
   return await userModel.cambiarRol(id, role);
 };
