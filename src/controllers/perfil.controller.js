@@ -1,29 +1,22 @@
 const perfilService = require("../services/perfil.service");
 
-// Crera Perfil
+// Crear o actualizar perfil
 exports.crearPerfil = async (req, res) => {
-
   try {
-
     const { telefono, direccion, ciudad, foto } = req.body;
-
     const user_id = req.usuario.id;
 
-    // 🔥 buscar si ya existe perfil
-    const perfilExistente =
-      await perfilService.obtenerPerfil(user_id);
+    const perfilExistente = await perfilService.obtenerPerfil(user_id);
 
     // SI EXISTE → ACTUALIZAR
     if (perfilExistente) {
-
-      const perfilActualizado =
-        await perfilService.actualizarPerfil(
-          user_id,
-          telefono,
-          direccion,
-          ciudad,
-          foto
-        );
+      const perfilActualizado = await perfilService.actualizarPerfil(
+        user_id,
+        telefono,
+        direccion,
+        ciudad,
+        foto
+      );
 
       return res.json({
         message: "Perfil actualizado",
@@ -32,57 +25,74 @@ exports.crearPerfil = async (req, res) => {
     }
 
     // SI NO EXISTE → CREAR
-    const nuevoPerfil =
-      await perfilService.crearPerfil(
-        user_id,
-        telefono,
-        direccion,
-        ciudad,
-        foto
-      );
+    const nuevoPerfil = await perfilService.crearPerfil(
+      user_id,
+      telefono,
+      direccion,
+      ciudad,
+      foto
+    );
 
-    res.json({
+    return res.json({
       message: "Perfil creado",
       perfil: nuevoPerfil
     });
 
   } catch (error) {
+    console.error("CREAR PERFIL ERROR COMPLETO:", error);
 
-    console.log(error);
-
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error en perfil"
     });
-
   }
-
 };
 
-// Obtener Perfil
+// Obtener perfil
 exports.obtenerPerfil = async (req, res) => {
-  const user_id = req.usuario.id;
+  try {
+    const user_id = req.usuario.id;
 
-  const perfil = await perfilService.obtenerPerfil(user_id);
+    const perfil = await perfilService.obtenerPerfil(user_id);
 
-  if (!perfil) {
-    return res.json({ message: "No existe perfil" });
+    if (!perfil) {
+      return res.json({ message: "No existe perfil" });
+    }
+
+    return res.json(perfil);
+
+  } catch (error) {
+    console.error("OBTENER PERFIL ERROR COMPLETO:", error);
+
+    return res.status(500).json({
+      message: "Error obteniendo perfil"
+    });
   }
-
-  res.json(perfil);
 };
 
-// Actulizar Perfil
+// Actualizar perfil
 exports.actualizarPerfil = async (req, res) => {
-  const { telefono, direccion, ciudad, foto } = req.body;
-  const user_id = req.usuario.id;
+  try {
+    const { telefono, direccion, ciudad, foto } = req.body;
+    const user_id = req.usuario.id;
 
-  const perfil = await perfilService.actualizarPerfil(
-    user_id,
-    telefono,
-    direccion,
-    ciudad,
-    foto
-  );
+    const perfil = await perfilService.actualizarPerfil(
+      user_id,
+      telefono,
+      direccion,
+      ciudad,
+      foto
+    );
 
-  res.json({ message: "Perfil actualizado", perfil });
+    return res.json({
+      message: "Perfil actualizado",
+      perfil
+    });
+
+  } catch (error) {
+    console.error("ACTUALIZAR PERFIL ERROR COMPLETO:", error);
+
+    return res.status(500).json({
+      message: "Error actualizando perfil"
+    });
+  }
 };

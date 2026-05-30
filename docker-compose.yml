@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: marketplace_auth_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-marketplace}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_pgdata:/var/lib/postgresql/data
+      - ./docs/sql/init-auth.sql:/docker-entrypoint-initdb.d/01-init-auth.sql:ro
+    networks:
+      - marketplace_network
+
+  auth-user-service:
+    build: .
+    container_name: auth_user_service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "4001:4001"
+    environment:
+      PORT: 4001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-marketplace}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      JWT_SECRET: ${JWT_SECRET:-local_secret_change_me}
+      EMAIL_USER: ${EMAIL_USER:-example@gmail.com}
+      EMAIL_PASS: ${EMAIL_PASS:-change_me}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    networks:
+      - marketplace_network
+
+volumes:
+  auth_pgdata:
+
+networks:
+  marketplace_network:
+    driver: bridge

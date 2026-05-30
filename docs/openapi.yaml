@@ -1,0 +1,384 @@
+openapi: 3.0.3
+info:
+  title: Auth User Service API
+  version: 1.0.0
+  description: API del microservicio de registro, login, recuperacion de contrasena, roles y perfil.
+servers:
+  - url: http://localhost:4001
+    description: Local
+  - url: https://auth-user-service.example.run.app
+    description: Cloud Run
+tags:
+  - name: Auth
+  - name: Perfil
+  - name: Admin
+security:
+  - bearerAuth: []
+paths:
+  /auth/registro:
+    post:
+      tags: [Auth]
+      summary: Registrar usuario
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              nombre: Juan Perez
+              email: juan@example.com
+              password: "123456"
+      responses:
+        "201":
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesion
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: juan@example.com
+              password: "123456"
+      responses:
+        "200":
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /auth/validate:
+    get:
+      tags: [Auth]
+      summary: Validar JWT para otros microservicios
+      responses:
+        "200":
+          description: Token valido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidateResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Obtener usuario autenticado con perfil
+      responses:
+        "200":
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Solicitar recuperacion de contrasena
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+            example:
+              email: juan@example.com
+      responses:
+        "200":
+          description: Correo enviado
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /auth/reset:
+    post:
+      tags: [Auth]
+      summary: Restablecer contrasena
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+            example:
+              token: token_recuperacion
+              password: nuevaPassword123
+      responses:
+        "200":
+          description: Contrasena actualizada
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /auth/perfil:
+    post:
+      tags: [Perfil]
+      summary: Crear o actualizar perfil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PerfilRequest"
+      responses:
+        "200":
+          description: Perfil creado o actualizado
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    get:
+      tags: [Perfil]
+      summary: Ruta protegida de prueba
+      responses:
+        "200":
+          description: Usuario decodificado del token
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/perfil/datos:
+    get:
+      tags: [Perfil]
+      summary: Obtener datos del perfil
+      responses:
+        "200":
+          description: Perfil del usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perfil"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/perfil/actualizar:
+    put:
+      tags: [Perfil]
+      summary: Actualizar perfil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PerfilRequest"
+      responses:
+        "200":
+          description: Perfil actualizado
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/usuarios:
+    get:
+      tags: [Admin]
+      summary: Listar usuarios
+      description: Solo rol admin.
+      responses:
+        "200":
+          description: Lista de usuarios
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /auth/usuarios/{id}/role:
+    put:
+      tags: [Admin]
+      summary: Cambiar rol de usuario
+      description: Solo rol admin. Roles permitidos: admin, operador, user.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [admin, operador, user]
+            example:
+              role: operador
+      responses:
+        "200":
+          description: Rol actualizado
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /auth/usuarios/{id}:
+    delete:
+      tags: [Admin]
+      summary: Eliminar usuario
+      description: Solo rol admin.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Usuario eliminado
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /auth/admin:
+    get:
+      tags: [Admin]
+      summary: Validar acceso admin
+      responses:
+        "200":
+          description: Acceso permitido
+        "403":
+          $ref: "#/components/responses/Forbidden"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    BadRequest:
+      description: Solicitud invalida
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Token faltante o invalido
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Rol sin permisos
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [nombre, email, password]
+      properties:
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+    ValidateResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        user:
+          $ref: "#/components/schemas/User"
+    MeResponse:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          properties:
+            perfil:
+              $ref: "#/components/schemas/Perfil"
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, operador, user]
+    Perfil:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        telefono:
+          type: string
+        direccion:
+          type: string
+        ciudad:
+          type: string
+        foto:
+          type: string
+    PerfilRequest:
+      type: object
+      properties:
+        telefono:
+          type: string
+        direccion:
+          type: string
+        ciudad:
+          type: string
+        foto:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string

@@ -152,21 +152,21 @@
   <div class="catalogo">
 
     <div class="producto">
-      <img src="https://via.placeholder.com/150">
+      <img src="https://placehold.co/150x150">
       <h3>Producto 1</h3>
       <p>$100</p>
       <button>Agregar</button>
     </div>
 
     <div class="producto">
-      <img src="https://via.placeholder.com/150">
+      <img src="https://placehold.co/150x150">
       <h3>Producto 2</h3>
       <p>$200</p>
       <button>Agregar</button>
     </div>
 
     <div class="producto">
-      <img src="https://via.placeholder.com/150">
+      <img src="https://placehold.co/150x150">
       <h3>Producto 3</h3>
       <p>$300</p>
       <button>Agregar</button>
@@ -182,24 +182,34 @@ let perfilExiste = false;
 
 window.onload = function () {
 
-  const token =
-    localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-  const user =
-    JSON.parse(localStorage.getItem("user"));
+  const userData = localStorage.getItem("user");
 
-  // SI NO HAY TOKEN
-  if (!token) {
+  let user = null;
+
+  try {
+    user = userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error("Error leyendo usuario:", error);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // SI NO HAY TOKEN O USUARIO
+  if (!token || !user) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "login.html";
     return;
   }
 
   // MOSTRAR NOMBRE
-  if (user) {
-    document.getElementById(
-      "nombreUsuario"
-    ).innerText = user.nombre;
-  }
+  document.getElementById(
+    "nombreUsuario"
+  ).innerText = user.nombre;
 
   // MOSTRAR PANEL SEGÚN ROL
 if (
@@ -252,7 +262,7 @@ if (user.role === "user") {
 
   // CARGAR PERFIL
   fetch(
-    "http://localhost:3000/auth/perfil/datos",
+    "https://backend-295165555939.us-central1.run.app/auth/perfil/datos",
     {
       method: "GET",
       headers: {
@@ -304,9 +314,8 @@ function guardarPerfil() {
     localStorage.getItem("token");
 
   const url = perfilExiste
-    ? "http://localhost:3000/auth/perfil/actualizar"
-    : "http://localhost:3000/auth/perfil";
-
+    ? "https://backend-295165555939.us-central1.run.app/auth/perfil/actualizar"
+    : "https://backend-295165555939.us-central1.run.app/auth/perfil";
   const method = perfilExiste
     ? "PUT"
     : "POST";
@@ -376,7 +385,7 @@ async function cargarUsuarios() {
     localStorage.getItem("token");
 
   const res = await fetch(
-    "http://localhost:3000/auth/usuarios",
+    "https://backend-295165555939.us-central1.run.app/auth/usuarios",
     {
       headers: {
         Authorization: "Bearer " + token
@@ -472,7 +481,7 @@ async function cambiarRol(id, role) {
     localStorage.getItem("token");
 
   const res = await fetch(
-    `http://localhost:3000/auth/usuarios/${id}/role`,
+    `https://backend-295165555939.us-central1.run.app/auth/usuarios/${id}/role`,
     {
       method: "PUT",
 
@@ -502,7 +511,7 @@ async function eliminarUsuario(id) {
     localStorage.getItem("token");
 
   const res = await fetch(
-    `http://localhost:3000/auth/usuarios/${id}`,
+    `https://backend-295165555939.us-central1.run.app/auth/usuarios/${id}`,
     {
       method: "DELETE",
 
@@ -522,8 +531,22 @@ async function eliminarUsuario(id) {
 // MÓDULO PRODUCTOS
 function mostrarModuloProductos() {
 
-  const user =
-    JSON.parse(localStorage.getItem("user"));
+  const userData = localStorage.getItem("user");
+
+  let user = null;
+
+  try {
+    user = userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error("Error leyendo usuario:", error);
+    cerrarSesion();
+    return;
+  }
+
+  if (!user) {
+    cerrarSesion();
+    return;
+  }
 
   let permisos = "";
 
@@ -596,8 +619,22 @@ function mostrarModuloProductos() {
 // MÓDULO VENTAS
 function mostrarModuloVentas() {
 
-  const user =
-    JSON.parse(localStorage.getItem("user"));
+  const userData = localStorage.getItem("user");
+
+  let user = null;
+
+  try {
+    user = userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error("Error leyendo usuario:", error);
+    cerrarSesion();
+    return;
+  }
+
+  if (!user) {
+    cerrarSesion();
+    return;
+  }
 
   let permisos = "";
 

@@ -1,7 +1,8 @@
 exports.manejarErrores = (err, req, res, next) => {
-    console.error("Error detectado:", err.message);
+  console.error("❌ ERROR DETECTADO COMPLETO:", err);
 
-    res.status(500).json({
-        error: "Error interno del servidor"
-    });
+  res.status(err.status || 500).json({
+    error: "Error interno del servidor",
+    message: err.message || "Error desconocido"
+  });
 };

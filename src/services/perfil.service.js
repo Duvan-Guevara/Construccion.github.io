@@ -10,7 +10,7 @@ exports.obtenerPerfil = async (user_id) => {
   return await perfilModel.obtenerPerfil(user_id);
 };
 
-// Actulizar Perfil
+// Actualizar Perfil
 exports.actualizarPerfil = async (user_id, telefono, direccion, ciudad, foto) => {
   return await perfilModel.actualizarPerfil(user_id, telefono, direccion, ciudad, foto);
 };

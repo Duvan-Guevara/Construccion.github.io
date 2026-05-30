@@ -19,13 +19,12 @@ exports.register = async (req, res) => {
     return res.status(201).json(result);
 
   } catch (error) {
-    console.error("REGISTER ERROR:", error.message);
+    console.error("REGISTER ERROR COMPLETO:", error);
     return res.status(500).json({ message: "Error en registro" });
   }
 };
 
-
-// Login 
+// Login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -40,17 +39,17 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: result.error });
     }
 
-    console.log("✅ Login exitoso");
+    console.log("✅ Login exitoso:", email);
 
     return res.json(result);
 
   } catch (error) {
-    console.error("LOGIN ERROR:", error.message);
+    console.error("LOGIN ERROR COMPLETO:", error);
     return res.status(500).json({ message: "Error en login" });
   }
 };
 
-//  Recuperar Contraseña 
+// Recuperar Contraseña
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -65,15 +64,15 @@ exports.forgotPassword = async (req, res) => {
       return res.status(400).json({ message: result.error });
     }
 
-    res.json({ message: "Correo enviado correctamente" });
+    return res.json({ message: "Correo enviado correctamente" });
 
   } catch (error) {
-    console.error("ERROR forgotPassword:", error);
-    res.status(500).json({ message: "Error al enviar correo" });
+    console.error("FORGOT PASSWORD ERROR COMPLETO:", error);
+    return res.status(500).json({ message: "Error al enviar correo" });
   }
 };
 
-// Nueva Contraseña 
+// Nueva Contraseña
 exports.resetPassword = async (req, res) => {
   const { token, password } = req.body;
 
@@ -88,27 +87,24 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: result.error });
     }
 
-    res.json(result);
+    return res.json(result);
 
   } catch (error) {
-    console.error("RESET PASSWORD ERROR:", error.message);
-    res.status(500).json({ message: "Error al actualizar contraseña" });
+    console.error("RESET PASSWORD ERROR COMPLETO:", error);
+    return res.status(500).json({ message: "Error al actualizar contraseña" });
   }
 };
 
-// Obtener usuarios en el panel 
+// Obtener usuarios en el panel
 exports.obtenerUsuarios = async (req, res) => {
-
   try {
+    const usuarios = await authService.obtenerUsuarios();
 
-    const usuarios =
-      await authService.obtenerUsuarios();
-
-    res.json(usuarios);
+    return res.json(usuarios);
 
   } catch (error) {
-
-    res.status(500).json({
+    console.error("OBTENER USUARIOS ERROR COMPLETO:", error);
+    return res.status(500).json({
       message: "Error obteniendo usuarios"
     });
   }
@@ -116,14 +112,11 @@ exports.obtenerUsuarios = async (req, res) => {
 
 // Cambiar rol
 exports.cambiarRol = async (req, res) => {
-
   try {
-
     const { id } = req.params;
     const { role } = req.body;
 
-    const usuario =
-      await authService.cambiarRol(id, role);
+    const usuario = await authService.cambiarRol(id, role);
 
     if (usuario.error) {
       return res.status(400).json({
@@ -131,14 +124,14 @@ exports.cambiarRol = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       message: "Rol actualizado",
       usuario
     });
 
   } catch (error) {
-
-    res.status(500).json({
+    console.error("CAMBIAR ROL ERROR COMPLETO:", error);
+    return res.status(500).json({
       message: "Error cambiando rol"
     });
   }
@@ -146,20 +139,18 @@ exports.cambiarRol = async (req, res) => {
 
 // Eliminar usuario
 exports.eliminarUsuario = async (req, res) => {
-
   try {
-
     const { id } = req.params;
 
     await authService.eliminarUsuario(id);
 
-    res.json({
+    return res.json({
       message: "Usuario eliminado"
     });
 
   } catch (error) {
-
-    res.status(500).json({
+    console.error("ELIMINAR USUARIO ERROR COMPLETO:", error);
+    return res.status(500).json({
       message: "Error eliminando usuario"
     });
   }
@@ -190,10 +181,9 @@ exports.me = async (req, res) => {
       role: req.usuario.role,
       perfil: perfil || null
     });
+
   } catch (error) {
-    console.error("ME ERROR:", error.message);
+    console.error("ME ERROR COMPLETO:", error);
     return res.status(500).json({ message: "Error obteniendo usuario" });
   }
 };
-
-

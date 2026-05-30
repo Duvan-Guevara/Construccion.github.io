@@ -1,4 +1,4 @@
 exports.logger = (req, res, next) => {
-    console.log(`📢 ${req.method} ${req.url} - ${new Date().toISOString()}`);
-    next();
+  console.log(`📢 ${req.method} ${req.originalUrl} - ${new Date().toISOString()}`);
+  next();
 };

@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logger (ANTES de rutas)
+// Logger
 const logger = require("./src/middlewares/logger.middleware");
 app.use(logger.logger);
 
@@ -18,15 +18,15 @@ app.use(logger.logger);
 const authRoutes = require("./src/routes/auth.routes");
 app.use("/auth", authRoutes);
 
+// Archivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
 
-// Error handler (Captura Errores del sistema)
+// Error handler
 const errorMiddleware = require("./src/middlewares/error.middleware");
 app.use(errorMiddleware.manejarErrores);
 
-
 // Server
-const PORT = process.env.PORT || 4001;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Servidor corriendo en puerto " + PORT);

@@ -3,3 +3,4 @@ node_modules/
 npm-debug.log
 docx_render_check/
 *.docx
+database/
